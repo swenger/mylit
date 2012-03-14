@@ -105,7 +105,7 @@ def format_program(data, title="", stylesheet="http://pygments.org/media/pygment
         elif line.strip().startswith("#") and (lineno, line.find("#")) in comments:
             block_type = "comment"
         # Blank lines terminate comment blocks only.
-        elif not line.strip() and last_block_type == "code":
+        elif not line.strip() and last_block_type == "comment":
             block_type = None
         # All other lines are considered code.
         else:
