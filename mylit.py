@@ -60,7 +60,7 @@ def format_lines(lines, title=""):
     # appropriate.  <a name="chain"><code>None</code> is appended to the list
     # of lines to terminate the last block.</a>
     for line in itertools.chain(lines, [None]):
-        # Lines starting with "#!" are ignored. This includes the traditional
+        # Lines starting with <code>#!</code> are ignored. This includes the traditional
         # "shebang" line as well as any code the user may want to exclude from
         # the output.
         if line is not None and line.strip().startswith("#!"):
@@ -69,11 +69,11 @@ def format_lines(lines, title=""):
         # A <code>None</code> line terminates the previous block.
         if line is None:
             block_type = None
-        # Lines starting with "##" are executed. This can be used to set
+        # Lines starting with <code>##</code> are executed. This can be used to set
         # configuration variables, for example.
         elif line.strip().startswith("##"):
             block_type = "exec"
-        # Any other line starting with "#" is a comment.
+        # Any other line starting with <code>#</code> is a comment.
         elif line.strip().startswith("#"):
             block_type = "comment"
         # All other lines are considered code.
