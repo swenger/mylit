@@ -27,8 +27,7 @@ from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter
 
 # This is the HTML template that will be filled with code:
-template = """
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+template = """<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
   <head>
     <title>%(title)s</title>
