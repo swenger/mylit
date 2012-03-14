@@ -6,7 +6,7 @@
 # <h1>mylit</h1>
 # <i>mylit</i> is a simple tool for literate programming in <a
 # href="http://www.python.org/">Python</a>.  To convert a literate Python
-# program called <samp>somefile.py</samp> to HTML, run <samp>python mylit.py
+# program called <samp>somefile.py</samp> to HTML, run <samp>python -m mylit
 # somefile.py &gt; somefile.html</samp>. The following documentation has been
 # generated from the <a href="mylit.py"><i>mylit</i> source</a>.
 
@@ -27,8 +27,7 @@ from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter
 
 # This is the HTML template that will be filled with code:
-template = """
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+template = """<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
   <head>
     <title>%(title)s</title>
