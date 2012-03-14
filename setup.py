@@ -28,6 +28,6 @@ setup(
     download_url = "http://pypi.python.org/pypi/mylit",
     url = "http://packages.python.org/mylit",
     setup_requires=["pygments"],
-    py_modules = ["mylit"],
+    py_modules = ["mylit"], # TODO console_scripts entry point
 )
 
