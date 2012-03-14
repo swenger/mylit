@@ -35,7 +35,9 @@ template = """<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.o
     <link rel="stylesheet" href="%(stylesheet)s">
   </head>
   <body>
-    %(body)s
+    <div id="main">
+      %(body)s
+    </div>
   </body>
 </html>
 """
