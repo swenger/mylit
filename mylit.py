@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 ## title = "mylit"
-## if True:
-##     import sys
-##     print >> sys.stderr, "Processing..."
+## stylesheet = "pygments_style.css"
 
 # <h1>mylit</h1>
 # <var>mylit</var> is a simple tool for literate programming in <a
@@ -11,7 +9,8 @@
 # program called <samp>somefile.py</samp> to HTML, run <samp>python mylit.py
 # somefile.py > somefile.html</samp>.
 
-#! TODO: automatic links between identifiers
+#! TODO: automatic links between identifiers, macros
+#! TODO: do not parse inside strings
 
 # We use <a href="http://docs.python.org/library/itertools.html">itertools</a>
 # for <a href="#chain">chaining sequences</a>.
@@ -29,7 +28,7 @@ template = """
   <head>
     <title>%(title)s</title>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <link rel="stylesheet" href="http://pygments.org/media/pygments_style.css">
+    <link rel="stylesheet" href="%(stylesheet)s">
   </head>
   <body>
     %(body)s
@@ -46,7 +45,7 @@ def strip_left(block, amount=0):
 
 # <code>format_lines</code> iterates over the <code>lines</code> object and
 # returns HTML.
-def format_lines(lines, title=""):
+def format_lines(lines, title="", stylesheet="http://pygments.org/media/pygments_style.css"):
     # The HTML body is stored in <code>body</code>.
     body = []
 
@@ -76,6 +75,9 @@ def format_lines(lines, title=""):
         # Any other line starting with <code>#</code> is a comment.
         elif line.strip().startswith("#"):
             block_type = "comment"
+        # Blank lines terminate comment blocks only.
+        elif not line.strip() and last_block_type == "code":
+            block_type = None
         # All other lines are considered code.
         else:
             block_type = "code"
@@ -93,7 +95,7 @@ def format_lines(lines, title=""):
                 exec("".join(strip_left(block, len(block[0]) - len(block[0].lstrip()[2:].lstrip()))))
             # Comments are copied verbatim to the output.
             elif last_block_type == "comment":
-                body.extend(strip_left(block, 1))
+                body.append('<p>' + " ".join(strip_left(block, 1)) + '</p>')
             last_block_type = block_type
             block = [line]
 
@@ -120,20 +122,25 @@ if __name__ == "__main__":
     parser.add_argument("infilename", help="the input file")
     # <code>outfilename</code> is an optional argument.
     parser.add_argument("outfilename", nargs="?", help="the output file, '-' for standard output")
-    # <code>title</code> can be specified to set the document title if the
+    # <code>title</code> and <code>stylesheet</code> can be specified if the
     # script does not do so itself.
-    parser.add_argument("--title", "-t", default="", help="the document title")
+    parser.add_argument("--title", "-t", help="the document title")
+    parser.add_argument("--stylesheet", "-s", help="the document title")
     # Parse the arguments.
     args = parser.parse_args()
     # If <code>outfilename</code> is not specified, it is generated from <code>infilename</code>.
     if args.outfilename is None:
         args.outfilename = os.path.splitext(args.infilename)[0] + os.path.extsep + "html"
 
+    # Pop any arguments that are not meant to end up in the <code>format_lines</code> call.
+    infilename = args.__dict__.pop("infilename")
+    outfilename = args.__dict__.pop("outfilename")
+
     # Open the input file and format it.
-    with open(args.infilename, "r") as f:
-        result = format_lines(f, args.title)
+    with open(infilename, "r") as f:
+        result = format_lines(f, **args.__dict__)
     # Write the results. This happens after the input file is closed, so that
     # in-place formatting is possible.
-    with sys.stdout if args.outfilename == "-" else open(args.outfilename, "w") as f:
+    with sys.stdout if outfilename == "-" else open(outfilename, "w") as f:
         f.write(result)
 
