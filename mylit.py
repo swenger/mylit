@@ -10,11 +10,15 @@
 # somefile.py > somefile.html</samp>.
 
 #! TODO: automatic links between identifiers, macros
-#! TODO: do not parse inside strings
 
 # We use <a href="http://docs.python.org/library/itertools.html">itertools</a>
 # for <a href="#chain">chaining sequences</a>.
 import itertools
+
+# To make sure we only parse lines beginning with <code>#</code> that actually
+# are comments (and not, e.g., inside strings), we double-check with the <a
+# href="http://docs.python.org/library/tokenize.html">tokenize</a> module.
+import tokenize
 
 # We use <a href="http://pygments.org/">Pygments</a> for syntax highlighting.
 from pygments import highlight
@@ -39,13 +43,33 @@ template = """
 # <code>strip_left()</code> removes whitespace from each line in
 # <code>block</code>, plus additional <code>amount</code> characters.  This is
 # defined as a function because the list comprehension cannot be used directly
-# in <code>format_lines()</code>, which uses an <code>exec</code> statement.
+# in <code>format_program()</code>, which uses an <code>exec</code> statement.
 def strip_left(block, amount=0):
     return [x.lstrip()[amount:] for x in block]
 
-# <code>format_lines</code> iterates over the <code>lines</code> object and
+# <code>find_comments()</code> returns a list of (row, column) tuples of
+# locations where comments start. Row indices are one-based!
+def find_comments(data):
+    # This helper function splits <code>data</code> into newline-terminated
+    # lines for <code>generate_tokens</code>.
+    def readline(data):
+        for line in data.splitlines():
+            yield line + "\n"
+        yield ""
+
+    # Here we generate tokens, extract comments end remember only the starting
+    # index.
+    return [start for ttype, tstring, start, end, line in tokenize.generate_tokens(readline(data).next) if ttype == tokenize.COMMENT]
+
+# <code>lines()</code> splits <code>data</code> into newline-terminated lines.
+# Again, this is defined outside of <code>format_program()</code> because of
+# the <code>exec()</code> call.
+def lines(data):
+    return (line + "\n" for line in data.splitlines())
+
+# <code>format_program</code> iterates over the <code>lines</code> object and
 # returns HTML.
-def format_lines(lines, title="", stylesheet="http://pygments.org/media/pygments_style.css"):
+def format_program(data, title="", stylesheet="http://pygments.org/media/pygments_style.css"):
     # The HTML body is stored in <code>body</code>.
     body = []
 
@@ -55,25 +79,30 @@ def format_lines(lines, title="", stylesheet="http://pygments.org/media/pygments
     # The type of the last block is stored in <code>last_block_type</code>.
     last_block_type = None
 
+    # Here we store a list of beginning indices of comment tokens.
+    comments = find_comments(data)
+
     # Now we iterate over the lines, formatting comments and code as
     # appropriate.  <a name="chain"><code>None</code> is appended to the list
-    # of lines to terminate the last block.</a>
-    for line in itertools.chain(lines, [None]):
-        # Lines starting with <code>#!</code> are ignored. This includes the traditional
-        # "shebang" line as well as any code the user may want to exclude from
-        # the output.
-        if line is not None and line.strip().startswith("#!"):
+    # of lines to terminate the last block.</a> The line numbers start at one
+    # to be consistent with the tokenizer.
+    for lineno, line in enumerate(itertools.chain(lines(data), [None]), 1):
+        # Comment lines starting with <code>#!</code> are ignored. This
+        # includes the traditional "shebang" line as well as any code the user
+        # may want to exclude from the output.
+        if line is not None and line.strip().startswith("#!") and (lineno, line.find("#")) in comments:
             continue
 
         # A <code>None</code> line terminates the previous block.
         if line is None:
             block_type = None
-        # Lines starting with <code>##</code> are executed. This can be used to set
-        # configuration variables, for example.
-        elif line.strip().startswith("##"):
+        # Comment lines starting with <code>##</code> are executed. This can be
+        # used to set configuration variables, for example.
+        elif line.strip().startswith("##") and (lineno, line.find("#")) in comments:
             block_type = "exec"
-        # Any other line starting with <code>#</code> is a comment.
-        elif line.strip().startswith("#"):
+        # Any other comment line starting with <code>#</code> is a comment to
+        # include in the HTML output.
+        elif line.strip().startswith("#") and (lineno, line.find("#")) in comments:
             block_type = "comment"
         # Blank lines terminate comment blocks only.
         elif not line.strip() and last_block_type == "code":
@@ -104,7 +133,7 @@ def format_lines(lines, title="", stylesheet="http://pygments.org/media/pygments
     return template % locals()
 
 # When the script is called from the command line, parse the arguments and run
-# <code>format_lines</code>.
+# <code>format_program</code>.
 if __name__ == "__main__":
     # <a href="http://docs.python.org/dev/library/argparse.html">argparse</a>
     # is used for parsing the command line arguments.
@@ -132,13 +161,13 @@ if __name__ == "__main__":
     if args.outfilename is None:
         args.outfilename = os.path.splitext(args.infilename)[0] + os.path.extsep + "html"
 
-    # Pop any arguments that are not meant to end up in the <code>format_lines</code> call.
+    # Pop any arguments that are not meant to end up in the <code>format_program</code> call.
     infilename = args.__dict__.pop("infilename")
     outfilename = args.__dict__.pop("outfilename")
 
     # Open the input file and format it.
     with open(infilename, "r") as f:
-        result = format_lines(f, **args.__dict__)
+        result = format_program(f.read(), **args.__dict__)
     # Write the results. This happens after the input file is closed, so that
     # in-place formatting is possible.
     with sys.stdout if outfilename == "-" else open(outfilename, "w") as f:
