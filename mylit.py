@@ -4,10 +4,11 @@
 ## stylesheet = "pygments_style.css"
 
 # <h1>mylit</h1>
-# <var>mylit</var> is a simple tool for literate programming in <a
+# <i>mylit</i> is a simple tool for literate programming in <a
 # href="http://www.python.org/">Python</a>.  To convert a literate Python
 # program called <samp>somefile.py</samp> to HTML, run <samp>python mylit.py
-# somefile.py > somefile.html</samp>.
+# somefile.py &gt; somefile.html</samp>. The following documentation has been
+# generated from the <a href="mylit.py"><i>mylit</i> source</a>.
 
 #! TODO: automatic links between identifiers, macros
 
