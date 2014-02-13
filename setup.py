@@ -10,7 +10,7 @@ setup(
     description = "Literate programming for Python",
     license = "MIT",
     keywords = "literate programming",
-    long_description = open("README.txt").read(),
+    long_description = open("README.rst").read(),
     classifiers = [
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
