@@ -3,7 +3,7 @@
 Literate Python programs are just regular Python source files with extensive
 comments. When `mylit` is run with a literate Python program as input, it
 creates an HTML file containing the comments and highlighted source code.  You
-can use HTML markup in comments as you may see fit.
+can use HTML markup in comments as you see fit.
 
 In addition to simple comments, the HTML compilation process can be customized
 by starting a comment line with `##`. Anything that follows on such a line will
